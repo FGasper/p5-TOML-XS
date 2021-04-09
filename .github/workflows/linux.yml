@@ -47,6 +47,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: ls
+        run: ls -la
       - name: submodule init
         run: git submodule init
       - name: submodule update
