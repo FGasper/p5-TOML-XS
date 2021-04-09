@@ -19,6 +19,7 @@ WriteMakefile(
     OBJECT => [
         '$(BASEEXT)$(OBJ_EXT)',
         'toml.o',
+        'sysfree.o',
     ],
 
     META_MERGE => {

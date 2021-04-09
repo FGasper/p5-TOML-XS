@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "toml.h"
+#include "sysfree.h"
 
 #define DOCUMENT_CLASS "TOML::XS::Document"
 #define TIMESTAMP_CLASS "TOML::XS::Timestamp"
@@ -43,7 +44,11 @@
 
 /* Per Tony Cook, writing an external pointer to the PV is safe
    except when DEBUGGING or MYMALLOC. */
-#define SV_CAN_USE_EXTERNAL_STRING !defined(DEBUGGING) && !defined(MYMALLOC)
+#if defined(DEBUGGING) || defined(MYMALLOC)
+#  define SV_CAN_USE_EXTERNAL_STRING 0
+#else
+#  define SV_CAN_USE_EXTERNAL_STRING 1
+#endif
 
 #if SV_CAN_USE_EXTERNAL_STRING
     /* More efficient: make the SV use the existing string.
@@ -65,7 +70,7 @@
     #define RETURN_IF_DATUM_IS_STRING(d)                            \
         if (d.ok) {                                                 \
             SV* ret = newSVpvn_utf8(d.u.s, strlen(d.u.s), TRUE);    \
-            free(d.u.s);                                            \
+            tomlxs_sysfree(d.u.s);                                  \
             return ret;                                             \
         }
 #endif
@@ -413,4 +418,4 @@ void
 DESTROY (SV* selfsv)
     CODE:
         toml_timestamp_t* ts = _get_toml_timestamp_from_sv(aTHX_ selfsv);
-        free(ts);
+        tomlxs_sysfree(ts);
