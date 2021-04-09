@@ -51,10 +51,14 @@ jobs:
         run: ls -la
       - name: git init
         run: git init
+      - name: git commit
+        run: git commit .gitmodules
       - name: submodule init
         run: git submodule init
       - name: submodule update
         run: git submodule update
+      - name: ls
+        run: ls -la
       - name: perl -V
         run: perl -V
       - name: Install Dependencies
