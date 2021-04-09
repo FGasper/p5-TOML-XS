@@ -19,11 +19,6 @@ jobs:
         run: git submodule init
       - name: submodule update
         run: git submodule update
-
-      # No symlinks in this Windows …
-      - run: copy /Y tomlc99\toml.h .
-      - run: copy /Y tomlc99\toml.c .
-
       - name: Set up Perl
         run: |
           choco install strawberryperl
@@ -32,6 +27,11 @@ jobs:
         run: perl -V
       - name: Install Dependencies
         run: curl -L https://cpanmin.us | perl - --notest --installdeps .
+
+      # No symlinks in this Windows …
+      - run: perl -MFile::Copy -e"copy(q<tomlc99/toml.h>, q<toml.h>)"
+      - run: perl -MFile::Copy -e"copy(q<tomlc99/toml.c>, q<toml.h>)"
+
       - name: perl Makefile.PL
         run: perl Makefile.PL
       - name: make
