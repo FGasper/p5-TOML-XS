@@ -56,7 +56,7 @@ jobs:
       - run: git config user.name User
       - run: git config user.email user@example.com
       - name: git commit
-        run: git commit
+        run: git commit -m dummy
       - name: submodule init
         run: git submodule init
       - name: submodule update
