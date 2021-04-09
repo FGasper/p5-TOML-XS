@@ -53,6 +53,8 @@ jobs:
         run: git init
       - name: git add
         run: git add .gitmodules
+      - run: get config user.name User
+      - run: get config user.email user@example.com
       - name: git commit
         run: git commit
       - name: submodule init
