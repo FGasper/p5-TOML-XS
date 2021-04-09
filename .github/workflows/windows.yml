@@ -31,6 +31,7 @@ jobs:
       # No symlinks in this Windows …
       - run: perl -MFile::Copy -e"copy(q<tomlc99/toml.h>, q<toml.h>)"
       - run: perl -MFile::Copy -e"copy(q<tomlc99/toml.c>, q<toml.c>)"
+      - run: dir
 
       - name: perl Makefile.PL
         run: perl Makefile.PL
