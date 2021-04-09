@@ -49,6 +49,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: ls
         run: ls -la
+      - name: git init
+        run: git init
       - name: submodule init
         run: git submodule init
       - name: submodule update
