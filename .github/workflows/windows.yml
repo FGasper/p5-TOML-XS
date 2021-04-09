@@ -27,7 +27,7 @@ jobs:
         run: perl -V
       - name: Install Dependencies
         run: curl -L https://cpanmin.us | perl - --notest --installdeps .
-      - cpanm Types::Serialiser Test::Deep Test::FailWarnings
+      - run: cpanm Types::Serialiser Test::Deep Test::FailWarnings
 
       # No symlinks in this Windows …
       - run: perl -MFile::Copy -e"unlink q<toml.h>; copy(q<tomlc99/toml.h>, q<toml.h>)"
