@@ -22,7 +22,7 @@ TOML::XS - Parse L<TOML|https://toml.io> with XS
 
 =head1 SYNOPSIS
 
-    # Yes, read_binary(). Don’t read_text().
+    # NB: Don’t read_text(), or stuff may break.
     my $toml = File::Slurper::read_binary('/path/to/toml/file');
 
     my $struct = TOML::XS::from_toml($toml)->to_struct();
@@ -58,6 +58,12 @@ L<Types::Serialiser>.
 =item * Timestamps are represented as L<TOML::XS::Timestamp> instances.
 
 =back
+
+=head1 NOTE ON CHARACTER DECODING
+
+This library mimics the default configuration of popular JSON modules:
+the TOML input to the parser is expected to be a byte string, while the
+strings that the parser outputs are character strings.
 
 =cut
 

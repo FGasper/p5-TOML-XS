@@ -35,3 +35,5 @@ inc/
 /*.zip
 
 *.sw*
+
+XS.c

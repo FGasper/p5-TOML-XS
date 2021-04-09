@@ -40,39 +40,49 @@
             (char*) ep - tomlstr                                \
         );                                                      \
     }
-/*
-#define RETURN_IF_DATUM_IS_STRING(d)                            \
-    if (d.ok) {                                                 \
-        SV* ret = newSVpvn_utf8(d.u.s, strlen(d.u.s), TRUE);    \
-        free(d.u.s);                                            \
-        return ret;                                             \
-    }
-*/
-#define RETURN_IF_DATUM_IS_STRING(d)                            \
-    if (d.ok) {                                                 \
-        SV* ret = newSV(0); \
-        SvUPGRADE(ret, SVt_PV); \
-        SvPV_set(ret, d.u.s); \
-        SvPOK_on(ret); \
-        SvCUR_set(ret, strlen(d.u.s)); \
-        SvLEN_set(ret, SvCUR(ret)); \
-        SvUTF8_on(ret); \
-        return ret;                                             \
-    }
 
-#define RETURN_IF_DATUM_IS_BOOLEAN(d)           \
-    if (d.ok) {                                 \
-        return SvREFCNT_inc(d.u.b ? PERL_TRUE : PERL_FALSE);  \
+/* Per Tony Cook, writing an external pointer to the PV is safe
+   except when DEBUGGING or MYMALLOC. */
+#define SV_CAN_USE_EXTERNAL_STRING !defined(DEBUGGING) && !defined(MYMALLOC)
+
+#if SV_CAN_USE_EXTERNAL_STRING
+    /* More efficient: make the SV use the existing string.
+       (Would sv_usepvn() work just as well??)
+    */
+    #define RETURN_IF_DATUM_IS_STRING(d)    \
+        if (d.ok) {                         \
+            SV* ret = newSV(0);             \
+            SvUPGRADE(ret, SVt_PV);         \
+            SvPV_set(ret, d.u.s);           \
+            SvPOK_on(ret);                  \
+            SvCUR_set(ret, strlen(d.u.s));  \
+            SvLEN_set(ret, SvCUR(ret));     \
+            SvUTF8_on(ret);                 \
+            return ret;                     \
+        }
+#else
+    /* Slow but safe: copy the string into the PV. */
+    #define RETURN_IF_DATUM_IS_STRING(d)                            \
+        if (d.ok) {                                                 \
+            SV* ret = newSVpvn_utf8(d.u.s, strlen(d.u.s), TRUE);    \
+            free(d.u.s);                                            \
+            return ret;                                             \
+        }
+#endif
+
+#define RETURN_IF_DATUM_IS_BOOLEAN(d)                           \
+    if (d.ok) {                                                 \
+        return SvREFCNT_inc(d.u.b ? PERL_TRUE : PERL_FALSE);    \
     }
 
 #define RETURN_IF_DATUM_IS_INTEGER(d)   \
     if (d.ok) {                         \
-        return newSViv(d.u.i);          \
+        return newSViv((IV)d.u.i);      \
     }
 
 #define RETURN_IF_DATUM_IS_DOUBLE(d)    \
     if (d.ok) {                         \
-        return newSVnv(d.u.d);          \
+        return newSVnv((NV)d.u.d);      \
     }
 
 #define RETURN_IF_DATUM_IS_TIMESTAMP(d)     \
