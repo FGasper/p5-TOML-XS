@@ -47,6 +47,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: submodule
+        run: ls -la
       - name: perl -V
         run: perl -V
       - name: Install Dependencies
