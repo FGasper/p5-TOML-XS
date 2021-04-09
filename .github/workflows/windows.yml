@@ -19,6 +19,11 @@ jobs:
         run: git submodule init
       - name: submodule update
         run: git submodule update
+
+      # No symlinks in this Windows …
+      - run: copy /Y tomlc99\toml.h .
+      - run: copy /Y tomlc99\toml.c .
+
       - name: Set up Perl
         run: |
           choco install strawberryperl
