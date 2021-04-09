@@ -29,8 +29,8 @@ jobs:
         run: curl -L https://cpanmin.us | perl - --notest --installdeps .
 
       # No symlinks in this Windows …
-      - run: perl -MFile::Copy -e"copy(q<tomlc99/toml.h>, q<toml.h>)"
-      - run: perl -MFile::Copy -e"copy(q<tomlc99/toml.c>, q<toml.c>)"
+      - run: perl -MFile::Copy -e"unlink q<toml.h>; copy(q<tomlc99/toml.h>, q<toml.h>)"
+      - run: perl -MFile::Copy -e"unlink q<toml.c>; copy(q<tomlc99/toml.c>, q<toml.c>)"
       - run: dir
 
       - name: perl Makefile.PL
