@@ -25,8 +25,8 @@
 #define _verify_no_null(tomlstr, tomllen)               \
     if (strchr(tomlstr, 0) != (tomlstr + tomllen)) {    \
         croak(                                          \
-            "String contains a NUL at index %ld!",      \
-            strchr(tomlstr, 0) - tomlstr                \
+            "String contains a NUL at index %" UVf "!", \
+            (UV)(strchr(tomlstr, 0) - tomlstr)          \
         );                                              \
     }
 
@@ -36,8 +36,8 @@
         const U8** epptr = (const U8**) &ep;                    \
         is_utf8_string_loc((const U8*)tomlstr, tomllen, epptr); \
         croak(                                                  \
-            "String contains non-UTF-8 at index %ld!",          \
-            (char*) ep - tomlstr                                \
+            "String contains non-UTF-8 at index %" UVf "!",     \
+            (UV)((char*) ep - tomlstr)                          \
         );                                                      \
     }
 
@@ -265,7 +265,7 @@ MODULE = TOML::XS     PACKAGE = TOML::XS::Document
 PROTOTYPES: DISABLE
 
 SV*
-to_struct (SV* docsv, SV* json_pointer=NULL)
+to_struct (SV* docsv)
     CODE:
         toml_table_t* tab = _get_toml_table_from_sv(aTHX_ docsv);
 
