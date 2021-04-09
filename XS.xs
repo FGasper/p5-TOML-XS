@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include "toml.h"
-#include "sysfree.h"
+#include "tomlxs.h"
 
 #define DOCUMENT_CLASS "TOML::XS::Document"
 #define TIMESTAMP_CLASS "TOML::XS::Timestamp"
@@ -70,7 +70,7 @@
     #define RETURN_IF_DATUM_IS_STRING(d)                            \
         if (d.ok) {                                                 \
             SV* ret = newSVpvn_utf8(d.u.s, strlen(d.u.s), TRUE);    \
-            tomlxs_sysfree(d.u.s);                                  \
+            tomlxs_free_string(d.u.s);                              \
             return ret;                                             \
         }
 #endif
@@ -418,4 +418,4 @@ void
 DESTROY (SV* selfsv)
     CODE:
         toml_timestamp_t* ts = _get_toml_timestamp_from_sv(aTHX_ selfsv);
-        tomlxs_sysfree(ts);
+        tomlxs_free_timestamp(ts);

@@ -3,4 +3,9 @@
    free() on some of its stuff. This works around that by providing a
    means to call free() from an XSUB.
 */
-void tomlxs_sysfree(void *ptr);
+
+#include "toml.h"
+
+void tomlxs_free_string(char *ptr);
+
+void tomlxs_free_timestamp(toml_timestamp_t *ptr);
