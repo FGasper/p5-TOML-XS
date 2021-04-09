@@ -51,8 +51,10 @@ jobs:
         run: ls -la
       - name: git init
         run: git init
+      - name: git add
+        run: git add .gitmodules
       - name: git commit
-        run: git commit .gitmodules
+        run: git commit
       - name: submodule init
         run: git submodule init
       - name: submodule update
