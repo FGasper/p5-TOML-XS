@@ -13,7 +13,7 @@ WriteMakefile(
     ),
     LIBS              => ['-ltoml'], # e.g., '-lm'
     DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
-    INC               => '-Wall -I.', # e.g., '-I. -I/usr/include/other'
+    INC               => '-Wall --std=c99 -I.', # e.g., '-I. -I/usr/include/other'
     LICENSE           => "perl_5",
 
     OBJECT => [
