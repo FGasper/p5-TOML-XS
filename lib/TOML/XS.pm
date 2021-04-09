@@ -74,6 +74,12 @@ strings that the parser outputs are character strings.
 
 #----------------------------------------------------------------------
 
+=head1 PERFORMANCE
+
+For small- and medium-sized files this should be quite a bit faster
+than pure-Perl TOML parsers. With larger files the speed gains are more
+muted or even (??) reversed. (That’s an underlying issue with tomlc99.)
+
 =head1 COPYRIGHT & LICENSE
 
 Copyright 2021 Gasper Software Consulting. All rights reserved.
