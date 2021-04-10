@@ -10,7 +10,7 @@ use Types::Serialiser ();
 use XSLoader ();
 
 BEGIN {
-    $VERSION = '0.01_04';
+    $VERSION = '0.01';
     XSLoader::load();
 }
 
@@ -30,7 +30,8 @@ TOML::XS - Parse L<TOML|https://toml.io> with XS
 =head1 DESCRIPTION
 
 This module facilitates parsing of TOML documents in Perl via XS,
-which should offer much greater speed than pure-Perl TOML parsers.
+which can yield significant performance gains relative to pure-Perl TOML
+libraries.
 
 It is currently implemented as a wrapper around the
 L<tomlc99|https://github.com/cktan/tomlc99> C library.
