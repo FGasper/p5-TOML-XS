@@ -7,6 +7,8 @@ use Test::More;
 use Test::FailWarnings;
 use Test::Deep;
 
+use Config;
+
 use TOML::XS;
 
 my $doc = <<END;
@@ -40,6 +42,8 @@ END
 
 my $struct = TOML::XS::from_toml($doc)->to_struct();
 
+my $round_floats = $Config{'uselongdouble'} || $Config{'usequadmath'};
+
 cmp_deeply(
     $struct,
     {
@@ -49,7 +53,7 @@ cmp_deeply(
                     'delta',
                     'phi'
                 ],
-                [3.14]
+                [ $round_floats ? num(3.14, 0.0001) : 3.14 ]
             ],
             'enabled' => TOML::XS::true,
             'ports'   => [
