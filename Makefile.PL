@@ -22,6 +22,13 @@ WriteMakefile(
         'tomlxs.o',
     ],
 
+    CONFIGURE_REQUIRES => {
+
+        # In order to specify OBJECT as an array.
+        'ExtUtils::MakeMaker' => 6.84,
+        'Devel::PPPort' => 0,
+    },
+
     META_MERGE => {
         'meta-spec' => { version => 2 },
         resources => {
