@@ -50,7 +50,7 @@ jobs:
 #      - run: cat /etc/os-release
 #      - run: apt upgrade git
 
-      - run: apt-get install gettext
+      - run: apt-get --yes install gettext
       - run: wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.31.1.tar.gz -O - | tar -xzf -
       - run: cd git-2.31.1; ./configure && make install
       - run: cd ..
