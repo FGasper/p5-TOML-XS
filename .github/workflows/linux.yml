@@ -46,6 +46,8 @@ jobs:
       image: perldocker/perl-tester:${{ matrix.perl-version }}
 
     steps:
+      - run: uname -a
+      - run: cat /etc/os-release
       - run: apt upgrade git
       - uses: actions/checkout@v2
       - name: submodule init
