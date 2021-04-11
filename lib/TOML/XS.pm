@@ -20,6 +20,8 @@ BEGIN {
 
 TOML::XS - Parse L<TOML|https://toml.io> with XS
 
+<a href='https://coveralls.io/github/FGasper/p5-TOML-XS?branch=master'><img src='https://coveralls.io/repos/github/FGasper/p5-TOML-XS/badge.svg?branch=master' alt='Coverage Status' /></a>
+
 =head1 SYNOPSIS
 
     # NB: Don’t read_text(), or stuff may break.

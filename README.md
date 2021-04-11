@@ -2,6 +2,8 @@
 
 TOML::XS - Parse [TOML](https://toml.io) with XS
 
+&lt;a href='https://coveralls.io/github/FGasper/p5-TOML-XS?branch=master'>&lt;img src='https://coveralls.io/repos/github/FGasper/p5-TOML-XS/badge.svg?branch=master' alt='Coverage Status' />&lt;/a>
+
 # SYNOPSIS
 
     # NB: Don’t read_text(), or stuff may break.
