@@ -48,7 +48,7 @@ for my $t_ar (@t) {
     print "$/$name …$/";
 
     Benchmark::cmpthese(
-        $numruns,
+        -1,
         \%benchmarks,
     );
 }

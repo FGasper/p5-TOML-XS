@@ -53,17 +53,15 @@ On my system the included (_very_ simple!) benchmark outputs:
     Including TOML::Tiny …
 
     small …
-                (warning: too few iterations for a reliable count)
                 Rate toml_tiny   toml_xs
-    toml_tiny   978/s        --      -95%
-    toml_xs   21739/s     2122%        --
+    toml_tiny  1009/s        --      -95%
+    toml_xs   21721/s     2053%        --
 
     large …
                 (warning: too few iterations for a reliable count)
-                (warning: too few iterations for a reliable count)
-            s/iter toml_tiny   toml_xs
-    toml_tiny   1.71        --      -94%
-    toml_xs    0.110     1455%        --
+              s/iter toml_tiny   toml_xs
+    toml_tiny   1.65        --      -93%
+    toml_xs    0.110     1400%        --
 
 # COPYRIGHT & LICENSE
 
