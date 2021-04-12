@@ -7,7 +7,7 @@ use warnings;
 
 =head1 NAME
 
-TOML::XS::Document - Object representation of a L<https://toml.io/|TOML> document
+TOML::XS::Document - Object representation of a L<TOML|https://toml.io> document
 
 =head1 SYNOPSIS
 

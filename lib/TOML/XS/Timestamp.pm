@@ -7,7 +7,7 @@ use warnings;
 
 =head1 NAME
 
-TOML::XS::Document - Object representation of a L<https://toml.io/|TOML> timestamp
+TOML::XS::Document - Object representation of a L<TOML|https://toml.io/> timestamp
 
 =head1 SYNOPSIS
 
