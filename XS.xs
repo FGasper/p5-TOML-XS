@@ -42,15 +42,7 @@
         );                                                      \
     }
 
-/* Per Tony Cook, writing an external pointer to the PV is safe
-   except when DEBUGGING or MYMALLOC. WIN32 also seems to break it. */
-#if defined(DEBUGGING) || defined(MYMALLOC) || defined(WIN32)
-#  define SV_CAN_USE_EXTERNAL_STRING 0
-#else
-#  define SV_CAN_USE_EXTERNAL_STRING 1
-#endif
-
-#if SV_CAN_USE_EXTERNAL_STRING
+#if TOMLXS_SV_CAN_USE_EXTERNAL_STRING
     /* More efficient: make the SV use the existing string.
        (Would sv_usepvn() work just as well??)
     */
