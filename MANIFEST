@@ -4,6 +4,9 @@ MANIFEST
 Makefile.PL
 README.md
 XS.xs
+examples/assets/large.toml.gz
+examples/assets/small.toml
+examples/benchmark.pl
 lib/TOML/XS.pm
 lib/TOML/XS/Document.pm
 lib/TOML/XS/Timestamp.pm

@@ -36,13 +36,36 @@ role = "frontend"
 ip = "10.0.0.2"
 role = "backend"
 
-[checkwide]
+[checkextra]
 fluff = "épée"
+alltypes = [ "a string", true, false, 123, 34.5, 1979-05-27T07:32:00-08:00, {} ]
+boolean = false
+integer = 123
+double = 34.5
+timestamp = 1979-05-27T07:32:00-08:00
 END
 
 my $struct = TOML::XS::from_toml($doc)->to_struct();
 
 my $round_floats = $Config{'uselongdouble'} || $Config{'usequadmath'};
+
+my $the_timestamp_cmp = all(
+    Isa('TOML::XS::Timestamp'),
+    methods(
+        to_string => '1979-05-27T07:32:00-08:00',
+        year => 1979,
+        month => 5,
+        day => 27,
+        date => 27,
+        hour => 7,
+        hours => 7,
+        minute => 32,
+        second => 0,
+        millisecond => undef,
+        milliseconds => undef,
+        timezone => '-08:00',
+    ),
+);
 
 cmp_deeply(
     $struct,
@@ -68,23 +91,7 @@ cmp_deeply(
         },
         'owner' => {
             'name' => 'Tom Preston-Werner',
-            'dob'  => all(
-                Isa('TOML::XS::Timestamp'),
-                methods(
-                    to_string => '1979-05-27T07:32:00-08:00',
-                    year => 1979,
-                    month => 5,
-                    day => 27,
-                    date => 27,
-                    hour => 7,
-                    hours => 7,
-                    minute => 32,
-                    second => 0,
-                    millisecond => undef,
-                    milliseconds => undef,
-                    timezone => '-08:00',
-                ),
-            ),
+            'dob'  => $the_timestamp_cmp,
         },
         'servers' => {
             'alpha' => {
@@ -97,8 +104,21 @@ cmp_deeply(
             }
         },
         'title' => 'TOML Example',
-   'checkwide' => {
-     'fluff' => "\x{e9}p\x{e9}e"
+   'checkextra' => {
+     'fluff' => "\x{e9}p\x{e9}e",
+     'alltypes' => [
+       'a string',
+       TOML::XS::true,
+       TOML::XS::false,
+       123,
+       '34.5',
+       $the_timestamp_cmp,
+       {},
+     ],
+     boolean => TOML::XS::false,
+     integer => 123,
+     double => 34.5,
+     timestamp => $the_timestamp_cmp,
    },
     },
     'struct as expected',

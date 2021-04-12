@@ -1,8 +1,10 @@
 # NAME
 
-TOML::XS - Parse [TOML](https://toml.io) with XS
+TOML::XS - Turbo-charged [TOML](https://toml.io) parsing!
 
-&lt;a href='https://coveralls.io/github/FGasper/p5-TOML-XS?branch=master'>&lt;img src='https://coveralls.io/repos/github/FGasper/p5-TOML-XS/badge.svg?branch=master' alt='Coverage Status' />&lt;/a>
+<div>
+    <a href='https://coveralls.io/github/FGasper/p5-TOML-XS?branch=master'><img src='https://coveralls.io/repos/github/FGasper/p5-TOML-XS/badge.svg?branch=master' alt='Coverage Status' /></a>
+</div>
 
 # SYNOPSIS
 
@@ -14,7 +16,7 @@ TOML::XS - Parse [TOML](https://toml.io) with XS
 # DESCRIPTION
 
 This module facilitates parsing of TOML documents in Perl via XS,
-which can yield significant performance gains relative to pure-Perl TOML
+which can yield dramatic performance gains relative to pure-Perl TOML
 libraries.
 
 It is currently implemented as a wrapper around the
@@ -40,15 +42,28 @@ which are namespace aliases for the relevant constants from
 
 # NOTE ON CHARACTER DECODING
 
-This library mimics the default configuration of popular JSON modules:
+This library mimics the default behaviour of popular JSON modules:
 the TOML input to the parser is expected to be a byte string, while the
 strings that the parser outputs are character strings.
 
 # PERFORMANCE
 
-For small- and medium-sized files this should be quite a bit faster
-than pure-Perl TOML parsers. With larger files the speed gains are more
-muted or even (??) reversed. (That’s an underlying issue with tomlc99.)
+On my system the included (_very_ simple!) benchmark outputs:
+
+    Including TOML::Tiny …
+
+    small …
+                (warning: too few iterations for a reliable count)
+                Rate toml_tiny   toml_xs
+    toml_tiny   978/s        --      -95%
+    toml_xs   21739/s     2122%        --
+
+    large …
+                (warning: too few iterations for a reliable count)
+                (warning: too few iterations for a reliable count)
+            s/iter toml_tiny   toml_xs
+    toml_tiny   1.71        --      -94%
+    toml_xs    0.110     1455%        --
 
 # COPYRIGHT & LICENSE
 

@@ -72,6 +72,25 @@ This library mimics the default behaviour of popular JSON modules:
 the TOML input to the parser is expected to be a byte string, while the
 strings that the parser outputs are character strings.
 
+=head1 PERFORMANCE
+
+On my system the included (I<very> simple!) benchmark outputs:
+
+    Including TOML::Tiny …
+
+    small …
+                (warning: too few iterations for a reliable count)
+                Rate toml_tiny   toml_xs
+    toml_tiny   978/s        --      -95%
+    toml_xs   21739/s     2122%        --
+
+    large …
+                (warning: too few iterations for a reliable count)
+                (warning: too few iterations for a reliable count)
+            s/iter toml_tiny   toml_xs
+    toml_tiny   1.71        --      -94%
+    toml_xs    0.110     1455%        --
+
 =cut
 
 #----------------------------------------------------------------------
