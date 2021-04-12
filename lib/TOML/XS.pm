@@ -10,7 +10,7 @@ use Types::Serialiser ();
 use XSLoader ();
 
 BEGIN {
-    $VERSION = '0.01';
+    $VERSION = '0.02';
     XSLoader::load();
 }
 
@@ -18,9 +18,13 @@ BEGIN {
 
 =head1 NAME
 
-TOML::XS - Parse L<TOML|https://toml.io> with XS
+TOML::XS - Turbo-charged L<TOML|https://toml.io> parsing!
+
+=begin html
 
 <a href='https://coveralls.io/github/FGasper/p5-TOML-XS?branch=master'><img src='https://coveralls.io/repos/github/FGasper/p5-TOML-XS/badge.svg?branch=master' alt='Coverage Status' /></a>
+
+=end html
 
 =head1 SYNOPSIS
 
@@ -32,7 +36,7 @@ TOML::XS - Parse L<TOML|https://toml.io> with XS
 =head1 DESCRIPTION
 
 This module facilitates parsing of TOML documents in Perl via XS,
-which can yield significant performance gains relative to pure-Perl TOML
+which can yield dramatic performance gains relative to pure-Perl TOML
 libraries.
 
 It is currently implemented as a wrapper around the
@@ -64,7 +68,7 @@ L<Types::Serialiser>.
 
 =head1 NOTE ON CHARACTER DECODING
 
-This library mimics the default configuration of popular JSON modules:
+This library mimics the default behaviour of popular JSON modules:
 the TOML input to the parser is expected to be a byte string, while the
 strings that the parser outputs are character strings.
 
@@ -76,12 +80,6 @@ strings that the parser outputs are character strings.
 *false = *Types::Serialiser::false;
 
 #----------------------------------------------------------------------
-
-=head1 PERFORMANCE
-
-For small- and medium-sized files this should be quite a bit faster
-than pure-Perl TOML parsers. With larger files the speed gains are more
-muted or even (??) reversed. (That’s an underlying issue with tomlc99.)
 
 =head1 COPYRIGHT & LICENSE
 
