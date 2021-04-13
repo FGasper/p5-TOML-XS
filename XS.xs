@@ -312,8 +312,9 @@ to_struct (SV* docsv)
 
             call_pv(CROAK_ERR_MSG_FN, G_DISCARD);
 
-            FREETMPS;
-            LEAVE;
+            // Unneeded:
+            // FREETMPS;
+            // LEAVE;
 
             assert(0);
         }
