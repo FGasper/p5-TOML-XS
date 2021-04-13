@@ -24,14 +24,14 @@ END
 }
 
 $doc = <<END;
-badbad = [ { "/fo~/é" = 00000 } ]
+badbad = [ { "/fo~/é" = [00000] } ]
 END
 
 {
     eval { TOML::XS::from_toml($doc)->to_struct() };
     my $err          = $@;
     diag $err;
-    like( $err, qr</badbad/0/~1fo~0~1\x{e9}>, 'error indicates deep, escaped, decoded JSON pointer' );
+    like( $err, qr</badbad/0/~1fo~0~1\x{e9}/0>, 'error indicates deep, escaped, decoded JSON pointer' );
 }
 
 done_testing;
