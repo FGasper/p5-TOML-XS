@@ -21,13 +21,19 @@
 
 #define UNUSED(x) (void)(x)
 
+#ifdef PL_phase
+#define _IS_GLOBAL_DESTRUCT (PL_phase == PERL_PHASE_DESTRUCT)
+#else
+#define _IS_GLOBAL_DESTRUCT PL_dirty
+#endif
+
 #define ERR_PATH_UNSHIFT(err_path_ptr, sv) STMT_START {   \
     if (NULL == *err_path_ptr) *err_path_ptr = newAV(); \
     av_unshift(*err_path_ptr, 1); \
     av_store(*err_path_ptr, 0, sv); \
 } STMT_END
 
-#define _timestamp_to_sv(ts) _ptr_to_svrv(aTHX_ ts, gv_stashpv(TIMESTAMP_CLASS, FALSE))
+#define _datum_timestamp_to_sv(datum) _ptr_to_svrv(aTHX_ datum.u.ts, gv_stashpv(TIMESTAMP_CLASS, FALSE))
 
 #define _verify_no_null(tomlstr, tomllen)               \
     if (strchr(tomlstr, 0) != (tomlstr + tomllen)) {    \
@@ -48,50 +54,50 @@
         );                                                      \
     }
 
+static inline SV* _datum_string_to_sv( pTHX_ toml_datum_t d ) {
 #if TOMLXS_SV_CAN_USE_EXTERNAL_STRING
     /* More efficient: make the SV use the existing string.
        (Would sv_usepvn() work just as well??)
     */
-    #define RETURN_IF_DATUM_IS_STRING(d)    \
-        if (d.ok) {                         \
-            SV* ret = newSV(0);             \
-            SvUPGRADE(ret, SVt_PV);         \
-            SvPV_set(ret, d.u.s);           \
-            SvPOK_on(ret);                  \
-            SvCUR_set(ret, strlen(d.u.s));  \
-            SvLEN_set(ret, SvCUR(ret));     \
-            SvUTF8_on(ret);                 \
-            return ret;                     \
-        }
+    SV* ret = newSV(0);
+    SvUPGRADE(ret, SVt_PV);
+    SvPV_set(ret, d.u.s);
+    SvPOK_on(ret);
+    SvCUR_set(ret, strlen(d.u.s));
+    SvLEN_set(ret, SvCUR(ret));
+    SvUTF8_on(ret);
 #else
     /* Slow but safe: copy the string into the PV. */
-    #define RETURN_IF_DATUM_IS_STRING(d)                            \
-        if (d.ok) {                                                 \
-            SV* ret = newSVpvn_utf8(d.u.s, strlen(d.u.s), TRUE);    \
-            tomlxs_free_string(d.u.s);                              \
-            return ret;                                             \
-        }
+    SV* ret = newSVpvn_utf8(d.u.s, strlen(d.u.s), TRUE);
+    tomlxs_free_string(d.u.s);
 #endif
 
-#define RETURN_IF_DATUM_IS_BOOLEAN(d)                           \
-    if (d.ok) {                                                 \
-        return SvREFCNT_inc(d.u.b ? PERL_TRUE : PERL_FALSE);    \
-    }
+    return ret;
+}
+
+#define _datum_boolean_to_sv(d) \
+    SvREFCNT_inc(d.u.b ? PERL_TRUE : PERL_FALSE);
+
+#define _datum_integer_to_sv(d) \
+    newSViv((IV)d.u.i);
+
+#define _datum_double_to_sv(datum) \
+    newSVnv((NV)datum.u.d);
+
+#define RETURN_IF_DATUM_IS_STRING(d) \
+    if (d.ok) return _datum_string_to_sv(aTHX_ d);
+
+#define RETURN_IF_DATUM_IS_BOOLEAN(d) \
+    if (d.ok) return _datum_boolean_to_sv(d);
 
 #define RETURN_IF_DATUM_IS_INTEGER(d)   \
-    if (d.ok) {                         \
-        return newSViv((IV)d.u.i);      \
-    }
+    if (d.ok) return _datum_integer_to_sv(d);
 
 #define RETURN_IF_DATUM_IS_DOUBLE(d)    \
-    if (d.ok) {                         \
-        return newSVnv((NV)d.u.d);      \
-    }
+    if (d.ok) return _datum_double_to_sv(d);
 
-#define RETURN_IF_DATUM_IS_TIMESTAMP(d)     \
-    if (d.ok) {                             \
-        return _timestamp_to_sv(d.u.ts);    \
-    }
+#define RETURN_IF_DATUM_IS_TIMESTAMP(d) \
+    if (d.ok) return _datum_timestamp_to_sv(d);
 
 /* ---------------------------------------------------------------------- */
 
@@ -170,7 +176,7 @@ SV* _toml_array_to_sv(pTHX_ toml_array_t* arr, AV** err_path_ptr) {
         av_store(av, i, sv);
     }
 
-    return newRV( (SV *) av );
+    return newRV_noinc( (SV *) av );
 }
 
 SV* _toml_table_value_to_sv(pTHX_ toml_table_t* curtab, const char* key, AV** err_path_ptr) {
@@ -243,6 +249,12 @@ SV* _toml_array_value_to_sv(pTHX_ toml_array_t* curarr, int i, AV** err_path_ptr
     return NULL;
 }
 
+static void _warn_if_global_destruct_destroy( pTHX_ SV* obj ) {
+    if (_IS_GLOBAL_DESTRUCT) {
+        warn( "%" SVf " destroyed at global destruction; memory leak likely!\n", obj);
+    }
+}
+
 /* for profiling: */
 /*
 #include <sys/time.h>
@@ -254,6 +266,197 @@ void _print_timeofday(char* label) {
     fprintf(stderr, "%s: %ld.%06d\n", label, tp.tv_sec, tp.tv_usec);
 }
 */
+
+typedef union {
+    toml_table_t*       table_p;
+    toml_array_t*       array_p;
+    toml_datum_t        datum;
+} entity_t;
+
+typedef struct {
+    entity_t entity;
+
+    enum toml_xs_type   type;
+} toml_entity_t;
+
+toml_entity_t _drill_into_array(pTHX_ toml_array_t* arrin, SV** stack, unsigned stack_idx, unsigned drill_len, AV** err_path_ptr);
+
+toml_entity_t _drill_into_table(pTHX_ toml_table_t* tabin, SV** stack, unsigned stack_idx, unsigned drill_len, AV** err_path_ptr) {
+    toml_entity_t newent;
+
+    SV* key_sv = stack[stack_idx];
+
+    if (!SvOK(key_sv)) {
+        croak("Undef given in lookup (#%d)!", stack_idx);
+    }
+
+    char* key = SvPVutf8_nolen(key_sv);
+
+    toml_table_t* tab = toml_table_in(tabin, key);
+
+    if (tab) {
+        if (stack_idx == drill_len-1) {
+            newent.type = TOML_XS_TYPE_TABLE;
+            newent.entity.table_p = tab;
+            return newent;
+        }
+        else {
+            return _drill_into_table(aTHX_ tab, stack, 1 + stack_idx, drill_len, err_path_ptr);
+        }
+    }
+
+    toml_array_t* arr = toml_array_in(tabin, key);
+
+    if (arr) {
+        if (stack_idx == drill_len-1) {
+            newent.type = TOML_XS_TYPE_ARRAY;
+            newent.entity.array_p = arr;
+            return newent;
+        }
+        else {
+            return _drill_into_array(aTHX_ arr, stack, 1 + stack_idx, drill_len, err_path_ptr);
+        }
+    }
+
+    if (stack_idx != drill_len-1) {
+        croak("pointer too deep!");
+    }
+
+    newent.entity.datum = toml_string_in(tabin, key);
+
+    if (newent.entity.datum.ok) {
+        newent.type = TOML_XS_TYPE_STRING;
+    }
+    else {
+        newent.entity.datum = toml_bool_in(tabin, key);
+
+        if (newent.entity.datum.ok) {
+            newent.type = TOML_XS_TYPE_BOOLEAN;
+        }
+        else {
+            newent.entity.datum = toml_int_in(tabin, key);
+
+            if (newent.entity.datum.ok) {
+                newent.type = TOML_XS_TYPE_INTEGER;
+            }
+            else {
+                newent.entity.datum = toml_double_in(tabin, key);
+
+                if (newent.entity.datum.ok) {
+                    newent.type = TOML_XS_TYPE_DOUBLE;
+                }
+                else {
+                    newent.entity.datum = toml_timestamp_in(tabin, key);
+
+                    if (newent.entity.datum.ok) {
+                        newent.type = TOML_XS_TYPE_TIMESTAMP;
+                    }
+                    else {
+                        // TODO: distinguish between invalid & missing
+                        croak("invalid or missing in table");
+                    }
+                }
+            }
+        }
+    }
+
+    return newent;
+}
+
+toml_entity_t _drill_into_array(pTHX_ toml_array_t* arrin, SV** stack, unsigned stack_idx, unsigned drill_len, AV** err_path_ptr) {
+    toml_entity_t newent;
+
+    int i;
+
+    SV* key_sv = stack[stack_idx];
+
+    if (SvUOK(key_sv)) {
+        i = SvUV(key_sv);
+    }
+    else if (!SvOK(key_sv)) {
+        croak("Undef given as array index!");
+    }
+    else {
+        UV idx_uv;
+
+        if (Perl_grok_atoUV(SvPVbyte_nolen(key_sv), &idx_uv, NULL)) {
+            i = idx_uv;
+        }
+        else {
+            croak("Non-numeric “%" SVf "” given as array index!", key_sv);
+        }
+    }
+
+    toml_table_t* tab = toml_table_at(arrin, i);
+
+    if (tab) {
+        if (stack_idx == drill_len-1) {
+            newent.type = TOML_XS_TYPE_TABLE;
+            newent.entity.table_p = tab;
+            return newent;
+        }
+        else {
+            return _drill_into_table( aTHX_ tab, stack, 1 + stack_idx, drill_len, err_path_ptr);
+        }
+    }
+
+    toml_array_t* arr = toml_array_at(arrin, i);
+
+    if (arr) {
+        if (stack_idx == drill_len-1) {
+            newent.type = TOML_XS_TYPE_ARRAY;
+            newent.entity.array_p = arr;
+            return newent;
+        }
+        else {
+            return _drill_into_array( aTHX_ arr, stack, 1 + stack_idx, drill_len, err_path_ptr);
+        }
+    }
+
+    if (stack_idx != drill_len-1) {
+        croak("pointer too deep!");
+    }
+
+    newent.entity.datum = toml_string_at(arrin, i);
+
+    if (newent.entity.datum.ok) {
+        newent.type = TOML_XS_TYPE_STRING;
+    }
+    else {
+        newent.entity.datum = toml_bool_at(arrin, i);
+
+        if (newent.entity.datum.ok) {
+            newent.type = TOML_XS_TYPE_BOOLEAN;
+        }
+        else {
+            newent.entity.datum = toml_int_at(arrin, i);
+
+            if (newent.entity.datum.ok) {
+                newent.type = TOML_XS_TYPE_INTEGER;
+            }
+            else {
+                newent.entity.datum = toml_double_at(arrin, i);
+
+                if (newent.entity.datum.ok) {
+                    newent.type = TOML_XS_TYPE_DOUBLE;
+                }
+                else {
+                    newent.entity.datum = toml_timestamp_at(arrin, i);
+
+                    if (newent.entity.datum.ok) {
+                        newent.type = TOML_XS_TYPE_TIMESTAMP;
+                    }
+                    else {
+                        croak("Invalid/missing array index: %" SVf, key_sv);
+                        // TODO: distinguish between invalid & missing
+                    }
+                }
+            }
+        }
+    }
+
+    return newent;
+}
 
 /* ---------------------------------------------------------------------- */
 
@@ -287,13 +490,56 @@ MODULE = TOML::XS     PACKAGE = TOML::XS::Document
 PROTOTYPES: DISABLE
 
 SV*
-to_struct (SV* docsv)
+parse (SV* docsv, ...)
+    ALIAS:
+        to_struct = 1
     CODE:
         toml_table_t* tab = _get_toml_table_from_sv(aTHX_ docsv);
 
         AV* err_path = NULL;
 
-        RETVAL = _toml_table_to_sv(aTHX_ tab, &err_path);
+        if (items > 1) {
+            toml_entity_t root_entity = _drill_into_table(aTHX_ tab, &ST(1), 0, items-1, &err_path);
+
+            switch (root_entity.type) {
+                case TOML_XS_TYPE_INVALID:
+                    RETVAL = NULL;
+                    break;
+                case TOML_XS_TYPE_TABLE:
+                    RETVAL = _toml_table_to_sv(aTHX_ root_entity.entity.table_p, &err_path);
+                    break;
+
+                case TOML_XS_TYPE_ARRAY:
+                    RETVAL = _toml_array_to_sv(aTHX_ root_entity.entity.array_p, &err_path);
+                    break;
+
+                case TOML_XS_TYPE_STRING:
+                    RETVAL = _datum_string_to_sv(aTHX_ root_entity.entity.datum);
+                    break;
+
+                case TOML_XS_TYPE_BOOLEAN:
+                    RETVAL = _datum_boolean_to_sv(root_entity.entity.datum);
+                    break;
+
+                case TOML_XS_TYPE_INTEGER:
+                    RETVAL = _datum_integer_to_sv(root_entity.entity.datum);
+                    break;
+
+                case TOML_XS_TYPE_DOUBLE:
+                    RETVAL = _datum_double_to_sv(root_entity.entity.datum);
+                    break;
+
+                case TOML_XS_TYPE_TIMESTAMP:
+                    RETVAL = _datum_timestamp_to_sv(root_entity.entity.datum);
+                    break;
+
+                default:
+                    assert(0);
+            }
+        }
+        else {
+            RETVAL = _toml_table_to_sv(aTHX_ tab, &err_path);
+        }
 
         if (NULL == RETVAL) {
             dSP;
@@ -324,6 +570,8 @@ to_struct (SV* docsv)
 void
 DESTROY (SV* docsv)
     CODE:
+        _warn_if_global_destruct_destroy(aTHX_ docsv);
+
         toml_table_t* tab = _get_toml_table_from_sv(aTHX_ docsv);
         toml_free(tab);
 
@@ -460,5 +708,7 @@ timezone (SV* selfsv)
 void
 DESTROY (SV* selfsv)
     CODE:
+        _warn_if_global_destruct_destroy(aTHX_ selfsv);
+
         toml_timestamp_t* ts = _get_toml_timestamp_from_sv(aTHX_ selfsv);
         tomlxs_free_timestamp(ts);

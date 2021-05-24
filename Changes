@@ -1,5 +1,10 @@
 Revision history for Perl extension TOML::XS:
 
+0.05
+- BUG FIX: Memory leak in array allocation is fixed.
+- to_struct() is renamed to parse(); this can now extract specific values.
+- Warn if objects are destroyed at global destruction.
+
 0.04 Thu 15 Apr 2021
 - Give explicit args to XSLoader::load().
 
