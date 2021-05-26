@@ -5,6 +5,7 @@
 
 #include "ppport.h"
 
+#include <stdbool.h>
 #include <string.h>
 
 #include "toml.h"
