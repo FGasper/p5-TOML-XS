@@ -34,9 +34,6 @@
 #define _IS_GLOBAL_DESTRUCT PL_dirty
 #endif
 
-/* cheating … */
-#define my_grok_atoUV Perl_grok_atoUV
-
 #define ERR_PATH_UNSHIFT(err_path_ptr, sv) STMT_START {   \
     if (NULL == *err_path_ptr) *err_path_ptr = newAV(); \
     av_unshift(*err_path_ptr, 1); \
@@ -108,6 +105,17 @@ static inline SV* _datum_string_to_sv( pTHX_ toml_datum_t d ) {
     if (d.ok) return _datum_timestamp_to_sv(aTHX_ d);
 
 /* ---------------------------------------------------------------------- */
+
+/* perlclib describes grok_atoUV(), but it’s not public. :( */
+bool my_grok_atoUV(pTHX_ const char *pv, UV *valuep) {
+    int numtype = grok_number(pv, strlen(pv), valuep);
+
+    /* The presence of any other flag in numtype indicates that
+       something besides a simple unsigned int was given. */
+    if (numtype == IS_NUMBER_IN_UV) return true;
+
+    return false;
+}
 
 SV* _ptr_to_svrv(pTHX_ void* ptr, HV* stash) {
     SV* referent = newSVuv( PTR2UV(ptr) );
@@ -487,7 +495,7 @@ toml_entity_t _drill_into_array(pTHX_ toml_array_t* arrin, SV** stack, unsigned 
     else {
         UV idx_uv;
 
-        if (my_grok_atoUV(SvPVbyte_nolen(key_sv), &idx_uv, NULL)) {
+        if (my_grok_atoUV(aTHX_ SvPVbyte_nolen(key_sv), &idx_uv)) {
             i = idx_uv;
         }
         else {
