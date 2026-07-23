@@ -1,5 +1,8 @@
 Revision history for Perl extension TOML::XS:
 
+0.06 Wed 22 Jul 2026
+- Switch to tomlc17
+
 0.05 Thu 12 Aug 2021
 - BUG FIX: Memory leak in array allocation is fixed.
 - BUG FIX: Decoded hash keys are now character-decoded.

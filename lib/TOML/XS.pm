@@ -10,7 +10,7 @@ use Types::Serialiser ();
 use XSLoader ();
 
 BEGIN {
-    $VERSION = '0.05';
+    $VERSION = '0.06';
     XSLoader::load( __PACKAGE__, $VERSION );
 }
 

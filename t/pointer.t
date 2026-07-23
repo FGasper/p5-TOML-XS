@@ -45,8 +45,10 @@ my $the_timestamp_cmp = all(
         hours        => 7,
         minute       => 32,
         second       => 0,
-        millisecond  => undef,
-        milliseconds => undef,
+        millisecond  => 0,
+        milliseconds => 0,
+        microsecond  => 0,
+        microseconds => 0,
         timezone     => '-08:00',
     ),
 );

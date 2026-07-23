@@ -1,3 +1,6 @@
-[submodule "tomlc99"]
-	path = tomlc99
-	url = https://github.com/cktan/tomlc99
+[submodule "tomlc17"]
+	path = tomlc17
+	url = https://github.com/cktan/tomlc17
+[submodule "easyxs"]
+	path = easyxs
+	url = https://github.com/FGasper/easyxs
