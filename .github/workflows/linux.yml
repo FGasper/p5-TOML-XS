@@ -56,16 +56,9 @@ jobs:
       image: perldocker/perl-tester:${{ matrix.perl-version }}
 
     steps:
-      - run: apt-get --yes install gettext
-        if: ${{ !matrix.can-use-git }}
-      - run: wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.31.1.tar.gz -O - | tar -xzf -
-        if: ${{ !matrix.can-use-git }}
-      - run: cd git-2.31.1; ./configure && make install
-        if: ${{ !matrix.can-use-git }}
-      - run: cd ..
-        if: ${{ !matrix.can-use-git }}
-
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
       - name: submodule init
         run: git submodule init
       - name: submodule update
