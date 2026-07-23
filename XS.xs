@@ -264,7 +264,7 @@ toml_datum_t _drill_into_table(pTHX_ toml_datum_t tabin, SV** stack, unsigned st
 }
 
 toml_datum_t _drill_into_array(pTHX_ toml_datum_t datum, SV** stack, unsigned stack_idx, unsigned drill_len) {
-    ASSUME(tabin.type == TOML_ARRAY);
+    ASSUME(datum.type == TOML_ARRAY);
 
     int i;
 
