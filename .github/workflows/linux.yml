@@ -24,6 +24,9 @@ jobs:
       fail-fast: false
       matrix:
         perl-version:
+          - '5.42'
+          - '5.40'
+          - '5.36'
           - '5.32'
           - '5.30'
           - '5.28'
@@ -85,3 +88,30 @@ jobs:
         run: |
           cpanm -n Devel::Cover::Report::Coveralls
           cover -test -ignore_re toml.c -ignore_re inline.h -report Coveralls
+
+  alpine:
+    runs-on: ubuntu-latest
+
+    name: Alpine ${{ matrix.docker_arch }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        docker_arch:
+        - i386
+        - s390x
+        - riscv64
+        - ppc64le
+        - amd64
+        - armhf
+        - arm/v7
+        - aarch64
+
+    steps:
+      - uses: actions/checkout@main
+        with:
+            submodules: recursive
+      - name: Get the qemu container
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - name: Run tests
+        run: docker run --rm --interactive --platform linux/${{ matrix.docker_arch }} --mount type=bind,source=$(pwd),target=/host alpine:latest sh -c "apk update && apk add bash curl wget perl perl-dev make git gcc musl-dev && perl -V && cd /host && curl -L https://cpanmin.us | perl - --notest --installdeps . && perl Makefile.PL && (make || make || make || make || make) && prove -wlvmb t"
