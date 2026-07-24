@@ -37,6 +37,12 @@ cmp_deeply(
 );
 
 cmp_deeply(
+    $docobj->get('checkextra', 'alltypes', 0, 'foo'),
+    'bar',
+    'get 0.foo',
+);
+
+cmp_deeply(
     $docobj->get('checkextra', 'alltypes', 1),
     [123],
     'get 1',

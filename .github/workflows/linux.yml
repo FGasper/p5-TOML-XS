@@ -79,7 +79,7 @@ jobs:
             -ignore_re perlstatic.h \
             -report Coveralls
 
-  linux-alt-perl:
+  funny-perl:
     runs-on: ubuntu-latest
 
     strategy:
