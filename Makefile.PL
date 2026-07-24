@@ -19,7 +19,6 @@ WriteMakefile(
     OBJECT => [
         '$(BASEEXT)$(OBJ_EXT)',
         'tomlc17.o',
-        'tomlxs.o',
     ],
 
     CONFIGURE_REQUIRES => {
