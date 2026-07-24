@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "tomlc17.h"
-#include "tomlxs.h"
 
 /* Disabled for production because adding subprocess detection
    would entail having a separate struct for the objects, which

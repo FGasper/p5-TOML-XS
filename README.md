@@ -27,6 +27,9 @@ It is currently implemented atop the
 [tomlc17](https://github.com/cktan/tomlc17) C library. This distribution
 embeds that library, so you don’t need to install it separately.
 
+This library is solely a parser; there is no logic here to serialize a parsed
+TOML document.
+
 # FUNCTIONS
 
 ## $doc = TOML::XS::from\_toml($byte\_string)
