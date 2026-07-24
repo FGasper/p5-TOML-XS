@@ -27,7 +27,7 @@ ppport.h
 t/basic.t
 t/leading_zero.t
 t/pointer.t
-t/pointer_array_final.t
+t/pointer_array.t
 t/timestamp.t
 t/triple_q_in_dbl_quote.t
 tomlc17/API.md
