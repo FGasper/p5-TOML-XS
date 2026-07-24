@@ -79,6 +79,48 @@ jobs:
             -ignore_re perlstatic.h \
             -report Coveralls
 
+  linux-alt-perl:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        perl-version:
+          - '5.020.003'
+          - '5.024.004'
+          - '5.026.003'
+          - '5.028.003'
+          - '5.030.003'
+          - '5.032.001'
+        build-config:
+          - main-longdouble-buster
+          - main-quadmath-buster
+
+    container:
+      image: simcop2387/perl-tester:${{ matrix.perl-version }}-${{ matrix.build-config }}
+
+    steps:
+      - uses: actions/checkout@main
+        with:
+            submodules: recursive
+      - run: perl -V
+      - name: Tolerate EOL Debian Buster
+        run: |
+            for f in $(find /etc/apt -name '*.list'); do
+                sed -i 's/deb.debian.org/archive.debian.org/g' "$f"
+                sed -i 's/security.debian.org/archive.debian.org/g' "$f"
+                sed -i '/buster-updates/d' "$f"
+                sed -i '/buster-backports/d' "$f"
+            done
+      - run: cat /etc/apt/sources.list
+      - run: apt update
+      # NB: apt-installed cpanm runs a different perl.
+      - run: apt install -y curl
+      - run: curl -L https://cpanmin.us | perl - --notest --installdeps .
+      - run: perl Makefile.PL
+      - run: make
+      - run: prove -wlvmb t
+
   alpine:
     runs-on: ubuntu-latest
 
