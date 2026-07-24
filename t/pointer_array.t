@@ -21,7 +21,7 @@ somearray = []
 
 [checkextra]
 "Löwe" = "Löwe"
-alltypes = [ { foo = "bar" }, [123], "yes" ]
+alltypes = [ { foo = "bar" }, [123], 05:12:23, 2026-01-01 ]
 boolean = false
 integer = 123
 double = 34.5
@@ -53,6 +53,14 @@ cmp_deeply(
     123,
     'get 1.0',
 );
+
+my $time = $docobj->get('checkextra', 'alltypes', 2);
+isa_ok($time, 'TOML::XS::Timestamp', 'time');
+is($time->to_string(), '05:12:23', 'time->to_string()');
+
+my $date = $docobj->get('checkextra', 'alltypes', 3);
+isa_ok($date, 'TOML::XS::Timestamp', 'date');
+is($date->to_string(), '2026-01-01', 'date->to_string()');
 
 eval { $docobj->get('checkextra', 'alltypes', -1) };
 my $err = $@;
