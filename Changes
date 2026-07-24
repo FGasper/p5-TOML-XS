@@ -1,6 +1,6 @@
 Revision history for Perl extension TOML::XS:
 
-0.06 Wed 23 Jul 2026
+0.06 Wed 24 Jul 2026
 - Switch to tomlc17, tomlc99’s successor. Fixes CVE-2026-16634.
 - Fix memory leaks when throwing certain errors.
 - Rename parse() and to_struct() to get(). (Old names kept for compatibility.)
