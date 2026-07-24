@@ -58,4 +58,10 @@ eval { $docobj->get('checkextra', 'alltypes', -1) };
 my $err = $@;
 like($err, qr<-1>, "negative index to array shows up in error");
 
+eval { $docobj->get('checkextra', 'alltypes', 1, 0, 'extra') };
+$err = $@;
+ok($err, "extra pointer member under array fails");
+like($err, qr</alltypes/1/0>, "JSON pointer is in error");
+like($err, qr<integer>, "non-container’s type is in error");
+
 done_testing;
