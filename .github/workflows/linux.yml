@@ -72,7 +72,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cpanm -n Devel::Cover::Report::Coveralls
-          cover -test -ignore_re tomlc17.c -ignore_re inline.h -report Coveralls
+          cover -test -ignore_re tomlc17.c -ignore_re inline.h -ignore_re easyxs -report Coveralls
 
   alpine:
     runs-on: ubuntu-latest
