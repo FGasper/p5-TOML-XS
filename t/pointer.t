@@ -1,6 +1,3 @@
-## Please see file perltidy.ERR
-## Please see file perltidy.ERR
-## Please see file perltidy.ERR
 #!/usr/bin/env perl
 
 use strict;
@@ -99,6 +96,7 @@ eval { diag explain $docobj->get('timestamp', 'foo') };
 my $err = $@;
 
 like( $err, qr<timestamp>, 'JSON pointer in too-deep error' );
+like( $err, qr<datetime>, 'type in too-deep error' );
 unlike( $err, qr<timestamp/foo>, 'JSON pointer in too-deep error (no too-deep element)' );
 
 #----------------------------------------------------------------------

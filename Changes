@@ -5,6 +5,7 @@ Revision history for Perl extension TOML::XS:
 - Fix memory leaks when throwing certain errors.
 - Rename parse() and to_struct() to get(). (Old names kept for compatibility.)
 - Add microsecond/microseconds accessor.
+- Pointer-too-deep error now includes the non-container’s type.
 - Test more platforms in CI.
 
 0.05 Thu 12 Aug 2021

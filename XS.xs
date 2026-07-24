@@ -47,6 +47,17 @@
         );                                                      \
     }
 
+const char* type_name[] = {
+    [TOML_STRING] = "string",
+    [TOML_INT64] = "integer",
+    [TOML_FP64] = "float",
+    [TOML_BOOLEAN] = "boolean",
+    [TOML_DATE] = "date",
+    [TOML_TIME] = "time",
+    [TOML_DATETIME] = "datetime",
+    [TOML_DATETIMETZ] = "datetime",
+};
+
 void append_tz_to_sv(pTHX_ int16_t minutes, SV* sv) {
     char sign = (minutes < 0) ? '-' : '+';
     int abs_minutes = abs(minutes);
@@ -169,58 +180,46 @@ SV* _toml_array_to_sv(pTHX_ toml_datum_t datum) {
 
 
 SV* _toml_datum_to_sv(pTHX_ toml_datum_t datum) {
-    double dbl;
     SV* ret;
 
     switch (datum.type) {
     case TOML_UNKNOWN:
-        // TODO: assert/assume
+        ASSUME(FALSE);
     case TOML_STRING:
-        ret = newSVpvn_utf8(datum.u.str.ptr, datum.u.str.len, TRUE);
-        break;
+        return newSVpvn_utf8(datum.u.str.ptr, datum.u.str.len, TRUE);
     case TOML_INT64:
-        ret = newSViv(datum.u.int64);
-        break;
+        return newSViv(datum.u.int64);
     case TOML_FP64:
-        dbl = datum.u.fp64;
-        ret = newSVnv(dbl); // TODO: check w/ weird perls
-        break;
+        return newSVnv(datum.u.fp64);
     case TOML_BOOLEAN:
-        ret = SvREFCNT_inc(datum.u.boolean ? PERL_TRUE : PERL_FALSE);
-        break;
+        return SvREFCNT_inc(datum.u.boolean ? PERL_TRUE : PERL_FALSE);
     case TOML_DATE:
     case TOML_TIME:
     case TOML_DATETIME:
     case TOML_DATETIMETZ:
         ret = exs_new_structref(toml_datum_t, TIMESTAMP_CLASS);
         memcpy(exs_structref_ptr(ret), &datum, sizeof(toml_datum_t));
-        //ret = &PL_sv_undef;
-        break;
+        return ret;
     case TOML_ARRAY:
-        ret = _toml_array_to_sv(aTHX_ datum);
-        break;
+        return _toml_array_to_sv(aTHX_ datum);
     case TOML_TABLE:
-        ret = _toml_table_to_sv(aTHX_ datum);
-        break;
+        return _toml_table_to_sv(aTHX_ datum);
     default:
-        assert(0);
+        break;
     }
 
-    return ret;
+    ASSUME(FALSE);
 }
 
 toml_datum_t _drill_into_array(pTHX_ toml_datum_t datum, SV** stack, unsigned stack_idx, unsigned drill_len);
 
-static inline void _croak_if_datum_is_nonfinal_drill( pTHX_ SV** stack, unsigned stack_idx, unsigned drill_len) {
-    if (stack_idx != drill_len-1) {
+static inline void _croak_on_nonfinal_drill( pTHX_ toml_type_t type, SV** stack, unsigned stack_idx, unsigned drill_len) {
+    SV* jsonpointer = _make_json_pointer_sv(aTHX_ stack, stack_idx);
+    sv_2mortal(jsonpointer);
 
-        SV* jsonpointer = _make_json_pointer_sv(aTHX_ stack, stack_idx);
-        sv_2mortal(jsonpointer);
+    croak("Cannot descend into non-container (%s)! (JSON pointer: %" SVf ")", type_name[type], jsonpointer);
 
-        croak("Cannot descend into non-container! (JSON pointer: %" SVf ")", jsonpointer);
-
-        assert(0);
-    }
+    assert(0);
 }
 
 toml_datum_t _drill_into_table(pTHX_ toml_datum_t tabin, SV** stack, unsigned stack_idx, unsigned drill_len) {
@@ -257,7 +256,7 @@ toml_datum_t _drill_into_table(pTHX_ toml_datum_t tabin, SV** stack, unsigned st
         break;
     }
 
-    _croak_if_datum_is_nonfinal_drill(aTHX_ stack, stack_idx, drill_len);
+    _croak_on_nonfinal_drill(aTHX_ next.type, stack, stack_idx, drill_len);
 
     ASSUME(FALSE);
     return next; // silence compiler warning
@@ -285,7 +284,7 @@ toml_datum_t _drill_into_array(pTHX_ toml_datum_t datum, SV** stack, unsigned st
         else {
             SV* json_pointer = _make_json_pointer_sv(aTHX_ stack, stack_idx - 1);
             sv_2mortal(json_pointer);
-            croak("Non-number (%" SVf ") given as index to array (JSON pointer: %" SVf ")!", key_sv, json_pointer);
+            croak("Invalid array index (%" SVf ") given to array (JSON pointer: %" SVf ")!", key_sv, json_pointer);
         }
     }
 
@@ -312,7 +311,7 @@ toml_datum_t _drill_into_array(pTHX_ toml_datum_t datum, SV** stack, unsigned st
         break;
     }
 
-    _croak_if_datum_is_nonfinal_drill(aTHX_ stack, stack_idx, drill_len);
+    _croak_on_nonfinal_drill(aTHX_ next.type, stack, stack_idx, drill_len);
 
     assert(0);
     return next; // silence compiler warning
