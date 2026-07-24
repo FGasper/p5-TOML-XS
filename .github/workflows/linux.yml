@@ -41,16 +41,8 @@ jobs:
           - '5.10'
           - '5.8'
         include:
-          - perl-version: '5.32'
-            os: ubuntu-latest
+          - perl-version: '5.42'
             coverage: true
-            can-use-git: true
-          - perl-version: '5.30'
-            can-use-git: true
-          - perl-version: '5.28'
-            can-use-git: true
-          - perl-version: '5.26'
-            can-use-git: true
 
     container:
       image: perldocker/perl-tester:${{ matrix.perl-version }}
@@ -80,7 +72,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cpanm -n Devel::Cover::Report::Coveralls
-          cover -test -ignore_re toml.c -ignore_re inline.h -report Coveralls
+          cover -test -ignore_re tomlc17.c -ignore_re inline.h -report Coveralls
 
   alpine:
     runs-on: ubuntu-latest
@@ -101,7 +93,7 @@ jobs:
         - aarch64
 
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v7
         with:
             submodules: recursive
       - name: Get the qemu container

@@ -81,7 +81,7 @@ my $struct_cmp = {
     },
 };
 
-my $struct = $docobj->parse();
+my $struct = $docobj->get();
 
 cmp_deeply(
     $struct,
@@ -90,36 +90,36 @@ cmp_deeply(
 ) or diag explain $struct;
 
 is(
-    $docobj->parse("L\xf6we"),
+    $docobj->get("L\xf6we"),
     "L\xf6we",
     'non-ASCII pointer',
 );
 
-eval { diag explain $docobj->parse('timestamp', 'foo') };
+eval { diag explain $docobj->get('timestamp', 'foo') };
 my $err = $@;
 
 like( $err, qr<timestamp>, 'JSON pointer in too-deep error' );
 unlike( $err, qr<timestamp/foo>, 'JSON pointer in too-deep error (no too-deep element)' );
 
 #----------------------------------------------------------------------
-eval { diag explain $docobj->parse('checkextra', undef) };
+eval { diag explain $docobj->get('checkextra', undef) };
 $err = $@;
 
 like( $err, qr<1>, 'Undef in pointer triggers exception (table)' );
 
-eval { diag explain $docobj->parse('checkextra', 'alltypes', undef) };
+eval { diag explain $docobj->get('checkextra', 'alltypes', undef) };
 $err = $@;
 
 like( $err, qr<2>, 'Undef in pointer triggers exception (array)' );
 
 #----------------------------------------------------------------------
-eval { diag explain $docobj->parse('checkextra', "\xf6\xf6\xf6") };
+eval { diag explain $docobj->get('checkextra', "\xf6\xf6\xf6") };
 $err = $@;
 
 like( $err, qr<checkextra/\xf6\xf6\xf6>, 'pointer refers to nonexistent table key' );
 
 #----------------------------------------------------------------------
-eval { diag explain $docobj->parse('checkextra', 'alltypes', "\xf6\xf6\xf6") };
+eval { diag explain $docobj->get('checkextra', 'alltypes', "\xf6\xf6\xf6") };
 $err = $@;
 
 like( $err, qr<checkextra/alltypes>, 'pointer is non-numeric into array' );
@@ -128,12 +128,12 @@ like( $err, qr<\xf6\xf6\xf6>, 'non-numeric array index' );
 
 #----------------------------------------------------------------------
 cmp_deeply(
-    $docobj->parse('checkextra', 'alltypes', 6),
+    $docobj->get('checkextra', 'alltypes', 6),
     {},
     'fetch last array element',
 );
 
-eval { diag explain $docobj->parse('checkextra', 'alltypes', 7) };
+eval { diag explain $docobj->get('checkextra', 'alltypes', 7) };
 $err = $@;
 
 like( $err, qr<checkextra/alltypes/7>, 'excess array index' );

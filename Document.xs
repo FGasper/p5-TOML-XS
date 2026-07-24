@@ -3,12 +3,12 @@ MODULE = TOML::XS     PACKAGE = TOML::XS::Document
 PROTOTYPES: DISABLE
 
 SV*
-parse (SV* docsv, ...)
+get (SV* docsv, ...)
     ALIAS:
         to_struct = 1
+        parse = 2
     CODE:
         UNUSED(ix);
-        //toml_table_t* tab = _get_toml_table_from_sv(aTHX_ docsv);
         toml_xs_doc* td = exs_structref_ptr(docsv);
 
         toml_datum_t datum;

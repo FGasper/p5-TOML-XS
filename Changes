@@ -1,8 +1,9 @@
 Revision history for Perl extension TOML::XS:
 
 0.06 Wed 23 Jul 2026
-- Switch to tomlc17, tomlc99’s successor.
+- Switch to tomlc17, tomlc99’s successor. Fixes CVE-2026-16634.
 - Add microsecond/microseconds accessor.
+- Test more platforms in CI.
 
 0.05 Thu 12 Aug 2021
 - BUG FIX: Memory leak in array allocation is fixed.

@@ -158,35 +158,35 @@ cmp_deeply(
 }
 
 {
-    my $checkextra = $docobj->parse('checkextra');
+    my $checkextra = $docobj->get('checkextra');
     cmp_deeply(
         $checkextra,
         $struct_cmp->{'checkextra'},
-        'parse() - single pointer item',
+        'get() - single pointer item',
     );
 
     for my $ce_piece (sort keys %{ $struct_cmp->{'checkextra'} }) {
-        my $parsed = $docobj->parse('checkextra', $ce_piece);
+        my $parsed = $docobj->get('checkextra', $ce_piece);
         cmp_deeply(
             $parsed,
             $struct_cmp->{'checkextra'}{$ce_piece},
-            "parse(checkextra, $ce_piece)",
+            "get(checkextra, $ce_piece)",
         );
     }
 
     for my $i ( 0 .. $#{ $struct_cmp->{'checkextra'}{'alltypes'} } ) {
-        my $parsed = $docobj->parse('checkextra', 'alltypes', $i);
+        my $parsed = $docobj->get('checkextra', 'alltypes', $i);
         cmp_deeply(
             $parsed,
             $struct_cmp->{'checkextra'}{'alltypes'}[$i],
-            "parse(checkextra, alltypes, $i)",
+            "get(checkextra, alltypes, $i)",
         );
 
-        $parsed = $docobj->parse('checkextra', 'alltypes', "$i");
+        $parsed = $docobj->get('checkextra', 'alltypes', "$i");
         cmp_deeply(
             $parsed,
             $struct_cmp->{'checkextra'}{'alltypes'}[$i],
-            qq<parse(checkextra, alltypes, "$i")>,
+            qq<get(checkextra, alltypes, "$i")>,
         );
     }
 }
